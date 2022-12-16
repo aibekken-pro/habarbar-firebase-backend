@@ -15,7 +15,7 @@ app.post('/', async (req, res) => {
     await admin.firestore().collection('habar-ads').add(ad);
     res.status(201).send('ad was created');
   } catch (error) {
-    res.status(500).send();
+    res.status(500).send(error);
   }
 });
 
