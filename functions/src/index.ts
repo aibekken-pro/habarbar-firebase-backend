@@ -1,12 +1,13 @@
 import * as functions from 'firebase-functions';
 import * as express from 'express';
-//import * as cors from "cors";
+import * as cors from "cors";
 import * as admin from 'firebase-admin';
 import { IAdCreate, IAd, IGetAd } from './models/rest-api-models';
 
 admin.initializeApp();
 
 const app = express();
+app.use(cors({origin: true}))
 
 //create ad
 app.post('/', async (req, res) => {
