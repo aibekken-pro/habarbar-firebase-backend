@@ -7,13 +7,15 @@ import { IAdCreate, IAd, IGetAd } from './models/rest-api-models';
 admin.initializeApp();
 
 const app = express();
-app.use(cors({origin: true}))
+app.use(cors({origin: true}));
+
+const db = admin.firestore();
 
 //create ad
 app.post('/', async (req, res) => {
   try {
     const ad: IAdCreate = req.body;
-    await admin.firestore().collection('habar-ads').add(ad);
+    await db.collection('habar-ads').add(ad);
     res.status(201).send('ad was created');
   } catch (error) {
     res.status(500).send(error);
@@ -23,7 +25,7 @@ app.post('/', async (req, res) => {
 //get all ads
 app.get('/', async (req, res) => {
   try {
-    const snapshot = await admin.firestore().collection('habar-ads').get();
+    const snapshot = await db.collection('habar-ads').get();
     let ads: IGetAd[] = [];
 
     snapshot.forEach((doc) => {
@@ -42,7 +44,7 @@ app.get('/', async (req, res) => {
 //get all ads
 app.get('/:id', async (req, res) => {
   try {
-    const snapshot = await admin.firestore().collection('habar-ads').doc(req.params.id).get();
+    const snapshot = await db.collection('habar-ads').doc(req.params.id).get();
     const ad: IGetAd = {
       id: snapshot.id,
       ...(snapshot.data() as IAd),
@@ -73,7 +75,7 @@ app.patch('/:id', async (req, res) => {
 //delete
 app.delete('/:id', async (req, res) => {
   try {
-    await admin.firestore().collection('habar-ads').doc(req.params.id).delete();
+    await db.collection('habar-ads').doc(req.params.id).delete();
     res.status(200).send('ad deleted');
   } catch (error) {
     res.status(500).send(error);
