@@ -38,4 +38,38 @@ app.get('/', async(req, res) => {
   }
 })
 
+//get all ads 
+app.get('/:id', async(req, res) => {
+  try {
+    const snapshot = await admin.firestore().collection('habar-ads').doc(req.params.id).get()
+    const ad: IGetAd = {
+      id: snapshot.id,
+      ...snapshot.data() as IAd
+    }
+    res.status(200).send(ad);
+  } catch (error) {
+    res.status(500).send(error)
+  }
+})
+
+//edit ad
+app.patch("/:id", async (req, res) => {
+  try {
+    const body: Partial<IAdCreate> = req.body;
+    await admin
+      .firestore()
+      .collection("habar-ads")
+      .doc(req.params.id)
+      .update({
+        ...body,
+      });
+    res.status(200).send("ad updated");
+  } catch (error) {
+    res.status(500).send();
+  }
+});
+
+
+
+
 export const ads = functions.https.onRequest(app);
