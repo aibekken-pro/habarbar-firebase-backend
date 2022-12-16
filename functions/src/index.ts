@@ -69,4 +69,14 @@ app.patch('/:id', async (req, res) => {
   }
 });
 
+//delete
+app.delete('/:id', async (req, res) => {
+  try {
+    await admin.firestore().collection('habar-ads').doc(req.params.id).delete();
+    res.status(200).send('ad deleted');
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
 export const ads = functions.https.onRequest(app);
