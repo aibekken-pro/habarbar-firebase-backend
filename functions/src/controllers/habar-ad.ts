@@ -1,7 +1,7 @@
 import * as express from 'express';
-import * as cors from "cors";
+import * as cors from 'cors';
 import * as admin from 'firebase-admin';
-import { IAdCreate, IAd, IGetAd } from '../models/rest-api-models';
+import {IAdCreate, IAd, IGetAd} from '../models/rest-api-models';
 
 admin.initializeApp();
 
@@ -10,7 +10,7 @@ adApp.use(cors({origin: true}));
 
 const db = admin.firestore();
 
-//create ad
+// create ad
 adApp.post('/', async (req, res) => {
   try {
     const ad: IAdCreate = req.body;
@@ -21,11 +21,11 @@ adApp.post('/', async (req, res) => {
   }
 });
 
-//get all ads
+// get all ads
 adApp.get('/', async (req, res) => {
   try {
     const snapshot = await db.collection('habar-ads').get();
-    let ads: IGetAd[] = [];
+    const ads: IGetAd[] = [];
 
     snapshot.forEach((doc) => {
       const ad: IGetAd = {
@@ -40,7 +40,7 @@ adApp.get('/', async (req, res) => {
   }
 });
 
-//get all ads
+// get all ads
 adApp.get('/:id', async (req, res) => {
   try {
     const snapshot = await db.collection('habar-ads').doc(req.params.id).get();
@@ -54,24 +54,19 @@ adApp.get('/:id', async (req, res) => {
   }
 });
 
-//edit ad
+// edit ad
 adApp.patch('/:id', async (req, res) => {
   try {
     const body: Partial<IAdCreate> = req.body;
-    await admin
-      .firestore()
-      .collection('habar-ads')
-      .doc(req.params.id)
-      .update({
-        ...body,
-      });
+    await admin.firestore().collection('habar-ads')
+        .doc(req.params.id).update({...body});
     res.status(200).send('ad updated');
   } catch (error) {
     res.status(500).send();
   }
 });
 
-//delete
+// delete
 adApp.delete('/:id', async (req, res) => {
   try {
     await db.collection('habar-ads').doc(req.params.id).delete();
@@ -80,4 +75,3 @@ adApp.delete('/:id', async (req, res) => {
     res.status(500).send(error);
   }
 });
-

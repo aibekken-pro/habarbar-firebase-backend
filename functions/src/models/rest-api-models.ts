@@ -1,6 +1,6 @@
 export interface IAd {
   creatorId: string,
-  category: string, 
+  category: string,
   title: string,
   description: string,
   location: string,
@@ -13,7 +13,7 @@ export interface IAd {
 }
 
 export interface IAdCreate {
-  category: string, 
+  category: string,
   title: string,
   description: string,
   price: number,
@@ -24,7 +24,7 @@ export interface IAdCreate {
 export interface IGetAd {
   id: string,
   creatorId: string,
-  category: string, 
+  category: string,
   title: string,
   description: string,
   location: string,
