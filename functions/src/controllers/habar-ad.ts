@@ -40,7 +40,7 @@ adApp.get('/', async (req, res) => {
   }
 });
 
-// get all ads
+// get ad
 adApp.get('/:id', async (req, res) => {
   try {
     const snapshot = await db.collection('habar-ads').doc(req.params.id).get();
