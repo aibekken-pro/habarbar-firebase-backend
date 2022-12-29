@@ -1,7 +1,9 @@
 import * as express from 'express';
 import * as cors from 'cors';
 import * as admin from 'firebase-admin';
+import * as jwt from 'jsonwebtoken';
 import {IAdCreate, IAd, IGetAd} from '../models/rest-api-models';
+import * as authMiddleWare from 'firebase-auth-express-middleware';
 
 admin.initializeApp();
 
@@ -11,7 +13,7 @@ adApp.use(cors({origin: true}));
 const db = admin.firestore();
 
 // create ad
-adApp.post('/', async (req, res) => {
+adApp.post('/', authMiddleWare.authn(admin.auth()), async (req, res) => {
   try {
     const ad: IAdCreate = req.body;
     await db.collection('habar-ads').add(ad);
@@ -54,11 +56,26 @@ adApp.get('/:id', async (req, res) => {
   }
 });
 
+const checkIsAuthor = (snapshot: admin.firestore.DocumentSnapshot<admin.firestore.DocumentData>, token?: string ) : boolean => {
+  if(token) {
+
+    const decodedToken =jwt.decode(token.split(' ')[1], {json: true})
+    return decodedToken?.sub === snapshot.data()?.author?.id    
+  } else {
+    return false;
+  }
+}
+
 // edit ad
-adApp.patch('/:id', async (req, res) => {
+adApp.patch('/:id', authMiddleWare.authn(admin.auth()), async (req, res) => {
   try {
+    const snapshot  = await db.collection('habar-ads').doc(req.params.id).get();
+    if(!checkIsAuthor(snapshot, req.headers.authorization)) {
+      res.status(403).send('not allowed');
+      return;
+    }
     const body: Partial<IAdCreate> = req.body;
-    await admin.firestore().collection('habar-ads')
+    await db.collection('habar-ads')
         .doc(req.params.id).update({...body});
     res.status(200).send('ad updated');
   } catch (error) {
@@ -67,8 +84,13 @@ adApp.patch('/:id', async (req, res) => {
 });
 
 // delete
-adApp.delete('/:id', async (req, res) => {
+adApp.delete('/:id', authMiddleWare.authn(admin.auth()), async (req, res) => {
   try {
+    const snapshot  = await db.collection('habar-ads').doc(req.params.id).get();
+    if(!checkIsAuthor(snapshot, req.headers.authorization)) {
+      res.status(403).send('not allowed');
+      return;
+    }
     await db.collection('habar-ads').doc(req.params.id).delete();
     res.status(200).send('ad deleted');
   } catch (error) {
