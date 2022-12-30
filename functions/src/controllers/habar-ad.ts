@@ -26,7 +26,13 @@ adApp.post('/', authMiddleWare.authn(admin.auth()), async (req, res) => {
 // get all ads
 adApp.get('/', async (req, res) => {
   try {
-    const snapshot = await db.collection('habar-ads').get();
+    const limit = req.query.limit ?  +req.query.limit : 10;
+    const startIndex = req.query.page ?  +req.query.page * limit : 0;
+    const snapshot = await db
+      .collection('habar-ads')
+      .limit(limit)
+      .offset(startIndex)
+      .get();
     const ads: IGetAd[] = [];
 
     snapshot.forEach((doc) => {
@@ -101,7 +107,14 @@ adApp.delete('/:id', authMiddleWare.authn(admin.auth()), async (req, res) => {
 //get user ads
 adApp.get('/user/:id', async (req, res) => {
   try {
-    const snapshot = await db.collection('habar-ads').where('author.id', '==', req.params.id).get();
+    const limit = req.query.limit ?  +req.query.limit : 10;
+    const startIndex = req.query.page ?  +req.query.page * limit : 0;
+    const snapshot = await db
+      .collection('habar-ads')
+      .where('author.id', '==', req.params.id)
+      .limit(limit)
+      .offset(startIndex)
+      .get();
     const ads: IGetAd[] = [];
 
     snapshot.forEach((doc) => {
@@ -120,7 +133,14 @@ adApp.get('/user/:id', async (req, res) => {
 //get ads by category
 adApp.get('/categories/:category', async (req, res) => {
   try {
-    const snapshot = await db.collection('habar-ads').where('category', '==', req.params.category).get();
+    const limit = req.query.limit ?  +req.query.limit : 10;
+    const startIndex = req.query.page ?  +req.query.page * limit : 0;
+    const snapshot = await db
+      .collection('habar-ads')
+      .where('category', '==', req.params.category)
+      .limit(limit)
+      .offset(startIndex)
+      .get();
     const ads: IGetAd[] = [];
 
     snapshot.forEach((doc) => {
