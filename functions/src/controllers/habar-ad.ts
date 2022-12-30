@@ -97,3 +97,22 @@ adApp.delete('/:id', authMiddleWare.authn(admin.auth()), async (req, res) => {
     res.status(500).send(error);
   }
 });
+
+//get user ads
+adApp.get('/user/:id', async (req, res) => {
+  try {
+    const snapshot = await db.collection('habar-ads').where('author.id', '==', req.params.id).get();
+    const ads: IGetAd[] = [];
+
+    snapshot.forEach((doc) => {
+      const ad: IGetAd = {
+        id: doc.id,
+        ...(doc.data() as IAd),
+      };
+      ads.push(ad);
+    });
+    res.status(200).send(ads);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+})
