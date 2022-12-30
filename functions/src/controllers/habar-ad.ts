@@ -116,3 +116,22 @@ adApp.get('/user/:id', async (req, res) => {
     res.status(500).send(error);
   }
 })
+
+//get ads by category
+adApp.get('/categories/:category', async (req, res) => {
+  try {
+    const snapshot = await db.collection('habar-ads').where('category', '==', req.params.category).get();
+    const ads: IGetAd[] = [];
+
+    snapshot.forEach((doc) => {
+      const ad: IGetAd = {
+        id: doc.id,
+        ...(doc.data() as IAd),
+      };
+      ads.push(ad);
+    });
+    res.status(200).send(ads);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+})
