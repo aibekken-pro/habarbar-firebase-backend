@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as cors from 'cors';
 import * as admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
-import {IAdCreate, IAd, IGetAd} from '../models/rest-api-models';
+import {IAd, IGetAd} from '../models/rest-api-models';
 import * as authMiddleWare from 'firebase-auth-express-middleware';
 
 admin.initializeApp();
@@ -15,7 +15,14 @@ const db = admin.firestore();
 // create ad
 adApp.post('/', authMiddleWare.authn(admin.auth()), async (req, res) => {
   try {
-    const ad: IAdCreate = req.body;
+    const createDate = new Date();
+    const creatorId = jwt.decode(req.headers.authorization!.split(' ')[1], {json: true})
+    const ad: IGetAd = {
+      creatorId,
+      createDate,
+      lastEditDate: createDate,
+      ...req.body
+    };
     await db.collection('habar-ads').add(ad);
     res.status(201).send('ad was created');
   } catch (error) {
@@ -28,12 +35,10 @@ adApp.get('/', async (req, res) => {
   try {
     const limit = req.query.limit ?  +req.query.limit : 10;
     const startIndex = req.query.page ?  +req.query.page * limit : 0;
-    const snapshot = await db
-      .collection('habar-ads')
-      .limit(limit)
-      .offset(startIndex)
-      .get();
-    const ads: IGetAd[] = [];
+    const snapshot = req.query?.search
+      ? await db.collection('habar-ads').get()
+      : await db.collection('habar-ads').limit(limit).offset(startIndex).orderBy('lastEditDate').get();
+    let ads: IGetAd[] = [];
 
     snapshot.forEach((doc) => {
       const ad: IGetAd = {
@@ -52,7 +57,7 @@ adApp.get('/', async (req, res) => {
 adApp.get('/:id', async (req, res) => {
   try {
     const snapshot = await db.collection('habar-ads').doc(req.params.id).get();
-    const ad: IGetAd = {
+    let ad: IGetAd = {
       id: snapshot.id,
       ...(snapshot.data() as IAd),
     };
@@ -80,9 +85,9 @@ adApp.patch('/:id', authMiddleWare.authn(admin.auth()), async (req, res) => {
       res.status(403).send('not allowed');
       return;
     }
-    const body: Partial<IAdCreate> = req.body;
+    const body: Partial<IGetAd> = { lastEditDate: new Date(), ...req.body };
     await db.collection('habar-ads')
-        .doc(req.params.id).update({...body});
+        .doc(req.params.id).update(body);
     res.status(200).send('ad updated');
   } catch (error) {
     res.status(500).send();

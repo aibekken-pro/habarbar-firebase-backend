@@ -8,7 +8,7 @@ export interface IAd {
   images: string[],
   isNew: boolean,
   createDate: Date,
-  lasEditDate: Date,
+  lastEditDate: Date,
   moderated: boolean
 }
 
@@ -32,6 +32,6 @@ export interface IGetAd {
   images: string[],
   isNew: boolean,
   createDate: Date,
-  lasEditDate: Date,
+  lastEditDate: Date,
   moderated: boolean
 }
