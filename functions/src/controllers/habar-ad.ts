@@ -47,6 +47,23 @@ adApp.get('/', async (req, res) => {
       };
       ads.push(ad);
     });
+    // through firestore there is no way to do a search by keyword
+    if(req.query.search?.length) {
+      const searchQueries = (req.query.search as string).split(' ')
+    
+      let matches: [IGetAd, number][] = []
+      ads.forEach(ad => {
+        let count = 0; 
+        for (let query of searchQueries) {
+          if(ad.title.includes(query)) count += 1;
+        }
+        if(count) {
+          matches.push([ad, count])
+        }
+      })
+
+      ads = matches.sort((a, b) => b[1] - a[1]).map(item => item[0])
+    }  
     res.status(200).send(ads);
   } catch (error) {
     res.status(500).send(error);
