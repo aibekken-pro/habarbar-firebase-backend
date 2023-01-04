@@ -16,10 +16,11 @@ const db = admin.firestore();
 adApp.post('/', authMiddleWare.authn(admin.auth()), async (req, res) => {
   try {
     const createDate = new Date();
-    const creatorId = jwt.decode(req.headers.authorization!.split(' ')[1], {json: true})
+    const creatorId = jwt.decode(req.headers.authorization!.split(' ')[1], {json: true})?.sub
     const ad: IGetAd = {
       creatorId,
       createDate,
+      moderated: false,
       lastEditDate: createDate,
       ...req.body
     };
