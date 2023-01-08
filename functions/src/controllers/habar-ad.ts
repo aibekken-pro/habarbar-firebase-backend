@@ -36,9 +36,27 @@ adApp.get('/', async (req, res) => {
   try {
     const limit = req.query.limit ?  +req.query.limit : 10;
     const startIndex = req.query.page ?  +req.query.page * limit : 0;
-    const snapshot = req.query?.search
-      ? await db.collection('habar-ads').get()
-      : await db.collection('habar-ads').limit(limit).offset(startIndex).orderBy('lastEditDate').get();
+
+    const searchText = req.query?.search;
+    const location = req.query?.location;
+    const category = req.query?.category;
+
+    let dbAdsCollect: admin.firestore.Query<admin.firestore.DocumentData> =db.collection('habar-ads')
+
+      if (location) {
+        dbAdsCollect = dbAdsCollect.where('location', '==', location)
+      } 
+      
+      if (category) {
+        dbAdsCollect = dbAdsCollect.where('category', '==', category)
+      }
+
+      if(!searchText) {
+        dbAdsCollect = dbAdsCollect.limit(limit).offset(startIndex)
+      }
+
+
+    const snapshot = await dbAdsCollect.get();
     let ads: IGetAd[] = [];
 
     snapshot.forEach((doc) => {
