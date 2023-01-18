@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as cors from 'cors';
 import * as admin from 'firebase-admin';
 import * as jwt from 'jsonwebtoken';
-import {IAd, IGetAd} from '../models/rest-api-models';
+import {IAd, ICategory, ICreateICategory, ICreateLocation, IGetAd, ILocation} from '../models/rest-api-models';
 import * as authMiddleWare from 'firebase-auth-express-middleware';
 
 admin.initializeApp();
@@ -196,3 +196,61 @@ adApp.get('/categories/:category', async (req, res) => {
     res.status(500).send(error);
   }
 })
+
+// get locations 
+adApp.get('/directory/locations', async (req, res) => {
+  try {
+    const locationsSnapshot =  await db.collection('locations').get()
+    const locations: ILocation[] = [];
+    locationsSnapshot.forEach((doc) => {
+      const location: ILocation = {
+        id: doc.id,
+        ...(doc.data() as ICreateLocation)
+      };
+      locations.push(location);
+    });
+    res.status(200).send(locations);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+// add location 
+adApp.post('/directory/locations', authMiddleWare.authn(admin.auth()), async (req, res) => {
+  try {
+    await db.collection('locations').add(req.body);
+    res.status(201).send('location was created');
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+// get categories 
+adApp.get('/directory/categories', async (req, res) => {
+  try {
+    const categoriesSnapshot =  await db.collection('categories').get()
+    const categories: ICategory[] = [];
+    categoriesSnapshot.forEach((doc) => {
+      const category: ICategory = {
+        id: doc.id,
+        ...(doc.data() as ICreateICategory)
+      };
+      categories.push(category);
+    });
+    res.status(200).send(categories);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+// add category 
+adApp.post('/directory/categories', authMiddleWare.authn(admin.auth()), async (req, res) => {
+  try {
+    await db.collection('categories').add(req.body);
+    res.status(201).send('category was created');
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+
